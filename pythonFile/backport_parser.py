@@ -1,32 +1,38 @@
-
+'''
+python script that order any programing file
+'''
 import re
 
 def file_parser(args):
-    pattern = re.compile(
-        r"(\s*#ifndef.*)|(\s*#if.*)|(\s*#else.*)|(\s*#endif.*)|(\s*#ifdef.*)|((static |static inline )?[a-z]+ \w+\(.*(\s*.*\s*.*\))?)")
+    # My variable
+    if_statements = "#if"
+    else_statements = "#else"
+    endif_statements = "#endif"
+    func_statements = ["void", "int", "bool", "string"]
 
     tab = 0
-
-    move_right_statements = ["#if", '#ifndef', '#ifdef']
-    single_move_left_statements = ["#else"]
-    move_left_statements = ["#endif"]
-
+    # reading loop from a programing file
     for i, line in enumerate(open(args.path, 'r').read().splitlines()):
+        # searching for the regular expression that we need
+        if_pattern= re.search(f"\s*{if_statements}.*", line)
+        else_pattern = re.search(f"\s*{else_statements}.*", line)
+        endif_pattern = re.search(f"\s*{endif_statements}.*", line)
+        # check if we have any regular expression in the reading line
+        if if_pattern: # have if_statements
+            print('line %s' % (i + 1) + ': ' + (' ' * tab) + '%s' % (if_pattern.group()))
+            tab += 4
 
-        for match in re.finditer(pattern, line):
-            if any(line.startswith(statement) for statement in move_right_statements):
-                print('line %s' % (i + 1) + ': ' + (' ' * tab) + '%s' % (match.group()))
-                tab += 4
+        elif else_pattern: # have else_statements
+            tab -= 4
+            print('line %s' % (i + 1) + ': ' + (' ' * tab) + '%s' % (else_pattern.group()))
+            tab += 4
 
-            elif any(line.startswith(statement) for statement in single_move_left_statements):
-                tab -= 4
-                print('line %s' % (i + 1) + ': ' + (' ' * tab) + '%s' % (match.group()))
-                tab += 4
+        elif endif_pattern: # have endif_statements
+            tab -= 4
+            print('line %s' % (i + 1) + ': ' + (' ' * tab) + '%s' % (endif_pattern.group()))
 
-            elif any(line.startswith(statement) for statement in move_left_statements):
-                tab -= 4
-                print('line %s' % (i + 1) + ': ' + (' ' * tab) + '%s' % (match.group()))
-
-            elif tab > 0:
-                print('line %s' % (i + 1) + ': ' + (' ' * tab) + '%s' % (match.group()))
-                multi_line = ''
+        else: # have function_statements
+            for statement in func_statements:
+                func_pattern = re.search(f"\s*{statement} \w+\(.*", line)
+                if func_pattern and tab > 0:
+                    print('line %s' % (i + 1) + ': ' + (' ' * tab) + '%s' % (func_pattern.string))
