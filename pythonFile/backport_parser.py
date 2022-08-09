@@ -52,7 +52,7 @@ def file_parser(args):
                     debug_print(tab, endif_pattern.group())
                     write_into_file(tab, endif_pattern.group(), output_file)
 
-                elif include_pattern:  # have include_statements
+                elif include_pattern and tab > 0:  # have include_statements
                     debug_print(tab, include_pattern.group())
                     write_into_file(tab, include_pattern.group(), output_file)
 
