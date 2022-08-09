@@ -51,6 +51,9 @@ def file_parser(args):
                     tab -= tab_size
                     debug_print(tab, endif_pattern.group())
                     write_into_file(tab, endif_pattern.group(), output_file)
+                    if tab == 0:
+                        debug_print(tab, ' ')
+                        write_into_file(tab, ' ', output_file)
 
                 elif include_pattern and tab > 0:  # have include_statements
                     debug_print(tab, include_pattern.group())
