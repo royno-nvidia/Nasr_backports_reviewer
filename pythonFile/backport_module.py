@@ -7,7 +7,8 @@ parser = argparse.ArgumentParser(description='Automatic full file review for def
 # Add Arguments
 parser.add_argument('-p', '--path', type=str, default=False,
                     help='Set a file path to review')
-
+parser.add_argument('-l', '--with_line_number', action='store_true',
+                    help='Set a line number')
 # Parse the argument
 args = parser.parse_args()
 

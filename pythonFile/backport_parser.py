@@ -11,11 +11,12 @@ def file_parser(args):
     elif_statements = "#elif"
     endif_statements = "#endif"
     include_statements = '#include'
-    func_statements = ["void", "int", "bool", "string"]
+    struct_statements = '^struct'
+    func_statements = ['void', 'int', 'bool', 'string']
 
     tab = 0
     tab_size = 4
-    with open('output_' + args.path, 'w') as Write_file:
+    with open('output_' + args.path, 'w') as output_file:
         with open(args.path, 'r') as Read_file:
             # reading loop from a programing file
             for i, line in enumerate(Read_file.readlines()):
@@ -26,46 +27,56 @@ def file_parser(args):
                 else_pattern = re.search(f"\s*{else_statements}.*", line)
                 endif_pattern = re.search(f"\s*{endif_statements}.*", line)
                 include_pattern = re.search(f"\s*{include_statements}.*", line)
+                struct_pattern = re.search(f"(\s*{struct_statements}.*) (\s?)(\w+)(\()", line)
                 # check if we have any regular expression in the reading line
 
                 if if_pattern:  # have if_statements
                     debug_print(tab, if_pattern.group())
-                    # print(f"line {i + 1}: {' ' * tab}{if_pattern.group()}")
-                    Write_file.write((' ' * tab) + if_pattern.group() + '\n')
+                    write_into_file(args.with_line_number, i, tab, if_pattern.group(), output_file)
                     tab += tab_size
 
                 elif else_pattern:  # have else_statements
                     tab -= tab_size
                     debug_print(tab, else_pattern.group())
-                    # print(f"line {i + 1}: {' ' * tab}{else_pattern.group()}")
-                    Write_file.write((' ' * tab) + else_pattern.group() + '\n')
+                    write_into_file(args.with_line_number, i, tab, else_pattern.group(), output_file)
                     tab += tab_size
 
                 elif elif_pattern:  # have elif_statements
                     tab -= tab_size
                     debug_print(tab, elif_pattern.group())
-                    # print(f"line {i + 1}: {' ' * tab}{elif_pattern.group()}")
-                    Write_file.write((' ' * tab) + elif_pattern.group() + '\n')
+                    write_into_file(args.with_line_number, i, tab, elif_pattern.group(), output_file)
                     tab += tab_size
 
                 elif endif_pattern:  # have endif_statements
                     tab -= tab_size
                     debug_print(tab, endif_pattern.group())
-                    # print(f"line {i + 1}: {' ' * tab}{endif_pattern.group()}")
-                    Write_file.write((' ' * tab) + endif_pattern.group() + '\n')
+                    write_into_file(args.with_line_number, i, tab, endif_pattern.group(), output_file)
+                    if tab == 0:
+                        debug_print(tab, ' ')
+                        write_into_file(args.with_line_number, i, tab, ' ', output_file)
 
-                elif include_pattern:  # have include_statements
+                elif include_pattern and tab > 0:  # have include_statements
                     debug_print(tab, include_pattern.group())
-                    # print(f"line {i + 1}: {' ' * tab}{include_pattern.group()}")
-                    Write_file.write((' ' * tab) + include_pattern.group() + '\n')
+                    write_into_file(args.with_line_number, i, tab, include_pattern.group(), output_file)
+
+                elif struct_pattern:
+                    debug_print(tab, struct_pattern.group(2))
+                    write_into_file(args.with_line_number, i, tab, struct_pattern.group(2), output_file)
 
                 else:  # have function_statements
-                     for statement in func_statements:
+                    for statement in func_statements:
                         func_pattern = re.search(fr"(\s*{statement}) (\w+)(\()", line)
                         if func_pattern and tab > 0:
                             debug_print(tab, func_pattern.group(2))
-                            # print(f"line {i + 1}: {' ' * tab}{func_pattern.group(2)}")
-                            Write_file.write(f"{' ' * tab}{func_pattern.group(2)}" + '\n')
+                            write_into_file(args.with_line_number, i, tab, func_pattern.group(2), output_file)
+
 
 def debug_print(tabs, group):
     print(f"{' ' * tabs}{group}")
+
+def write_into_file(option, number, tabs, data, output_files):
+
+    if option:
+        output_files.write(f"line {number}:  {' ' * tabs}{data}\n")
+    else:
+        output_files.write(f"{' ' * tabs}{data}\n")
